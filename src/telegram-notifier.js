@@ -1,12 +1,19 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const TelegramBot = require('node-telegram-bot-api');
+const USER_MAPPING = require('./user-mapping');
 
 class TelegramNotifier {
   constructor() {
     this.botToken = core.getInput('telegram-bot-token') || process.env.TELEGRAM_BOT_TOKEN;
     this.chatId = core.getInput('telegram-chat-id') || process.env.TELEGRAM_CHAT_ID;
     this.bot = new TelegramBot(this.botToken);
+  }
+
+  // Mapear usuario de GitHub a Telegram
+  mapUser(githubUsername) {
+    const telegramUsername = USER_MAPPING[githubUsername];
+    return telegramUsername ? `@${telegramUsername}` : `@${githubUsername}`;
   }
 
   async sendMessage(message) {
@@ -23,8 +30,8 @@ class TelegramNotifier {
     const { action, issue, assignee } = payload;
     if (action === 'assigned' && assignee) {
       const taskTitle = issue.title;
-      const assigneeName = assignee.login;
-      return `[Auto-asignación de Tareas] @${assigneeName} - ${taskTitle}`;
+      const assigneeName = this.mapUser(assignee.login);
+      return `[Auto-asignación de Tareas] ${assigneeName} - ${taskTitle}`;
     }
     return null;
   }
@@ -33,14 +40,15 @@ class TelegramNotifier {
     const { action, pull_request } = payload;
     if (action === 'opened' || action === 'ready_for_review') {
       const prTitle = pull_request.title;
-      const author = pull_request.user.login;
+      const author = this.mapUser(pull_request.user.login);
       const prUrl = pull_request.html_url;
       
       // Buscar reviewers en la descripción o asignar a todos
       const reviewers = this.extractReviewers(pull_request);
-      const reviewersMention = reviewers.length > 0 ? reviewers.map(r => `@${r}`).join(' ') : '@team';
+      const reviewersMention = reviewers.length > 0 ? 
+        reviewers.map(r => this.mapUser(r)).join(' ') : '@team';
       
-      return `[PR] ${reviewersMention} - <a href="${prUrl}">${prTitle}</a> por @${author}`;
+      return `[PR] ${reviewersMention} - <a href="${prUrl}">${prTitle}</a> por ${author}`;
     }
     return null;
   }
@@ -93,7 +101,7 @@ class TelegramNotifier {
     const description = pullRequest.body || '';
     const mentions = description.match(/@(\w+)/g);
     if (mentions) {
-      return mentions.map(m => m.substring(1));
+      return mentions.map(m => m.substring(1)); // Quitar el @
     }
     return [];
   }
