@@ -1,10 +1,18 @@
+require('dotenv').config();
 const TelegramBot = require('node-telegram-bot-api');
 
-// IMPORTANTE: Configura estas variables de entorno antes de ejecutar
-const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN || 'TU_TOKEN_AQUI';
-const CHAT_ID = process.env.TELEGRAM_CHAT_ID || 'TU_CHAT_ID_AQUI';
-
 async function testBot() {
+  const BOT_TOKEN = process.env.TELEGRAM_BOT_TOKEN;
+  const CHAT_ID = process.env.TELEGRAM_CHAT_ID;
+  
+  if (!BOT_TOKEN || !CHAT_ID) {
+    console.error('❌ Error: Faltan variables de entorno');
+    console.log('📝 Crea un archivo .env con:');
+    console.log('TELEGRAM_BOT_TOKEN=tu_token');
+    console.log('TELEGRAM_CHAT_ID=tu_chat_id');
+    return;
+  }
+  
   const bot = new TelegramBot(BOT_TOKEN);
   
   try {
@@ -24,10 +32,6 @@ async function testBot() {
     
   } catch (error) {
     console.error('❌ Error:', error.message);
-    console.log('\n🔧 Posibles soluciones:');
-    console.log('1. Verifica que el CHAT_ID sea correcto (número negativo)');
-    console.log('2. Asegúrate de que el bot esté añadido al grupo');
-    console.log('3. Verifica que el token sea correcto');
   }
 }
 
