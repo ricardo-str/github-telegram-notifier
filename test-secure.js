@@ -21,11 +21,21 @@ async function testBot() {
     const message = `🎉 <b>Bot de Prueba Funcionando!</b>
 
 📌 Esto es una prueba del sistema de notificaciones:
-[Auto-asignación de Tareas] @usuario_prueba - Tarea de ejemplo
-[PR] @reviewer - <a href="https://github.com/test/repo/pull/1">Pull Request de prueba</a>
-[Información] Tarea movida de TODO → In Progress
 
-✅ Si ves este mensaje, el bot está configurado correctamente.`;
+<b>Auto-asignación:</b>
+[Auto-asignación de Tareas] @usuario_prueba - Tarea de ejemplo
+
+<b>Pull Request:</b>
+[PR] @reviewer - <a href="https://github.com/test/repo/pull/1">Pull Request de prueba</a>
+
+<b>Estados del Project Board:</b>
+[Información] Tarea movida ⚪ No Status → 📋 TODO
+[Información] Tarea movida 📋 TODO → 🔄 In Progress  
+[Información] Tarea movida 🔄 In Progress → 👀 Review
+[Información] Tarea movida 👀 Review → ✅ DONE
+[Información] Tarea movida 🔄 In Progress → ⏸️ On Hold
+
+✅ Si ves este mensaje, el bot está configurado correctamente para las 6 columnas.`;
 
     await bot.sendMessage(CHAT_ID, message, { parse_mode: 'HTML' });
     console.log('✅ Mensaje enviado correctamente!');

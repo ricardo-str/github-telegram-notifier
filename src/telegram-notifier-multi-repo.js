@@ -66,10 +66,13 @@ class TelegramNotifier {
         const oldValue = changes.field_value.from;
         const newValue = changes.field_value.to;
         
-        // Mapear estados del project
+        // Mapear estados del project - actualizado para 6 columnas
         const statusMap = {
+          'No Status': 'No Status',
+          'On Hold': 'On Hold', 
           'Todo': 'TODO',
           'In Progress': 'In Progress',
+          'Review': 'Review',
           'Done': 'DONE'
         };
 
@@ -77,7 +80,20 @@ class TelegramNotifier {
         const toStatus = statusMap[newValue] || newValue;
         
         if (fromStatus !== toStatus) {
-          return `[Información] Tarea movida de ${fromStatus} → ${toStatus}`;
+          // Añadir emojis para mejor visualización
+          const statusEmojis = {
+            'No Status': '⚪',
+            'On Hold': '⏸️',
+            'TODO': '📋',
+            'In Progress': '🔄',
+            'Review': '👀',
+            'DONE': '✅'
+          };
+          
+          const fromEmoji = statusEmojis[fromStatus] || '';
+          const toEmoji = statusEmojis[toStatus] || '';
+          
+          return `[Información] Tarea movida ${fromEmoji} ${fromStatus} → ${toEmoji} ${toStatus}`;
         }
       }
     }
