@@ -1,8 +1,11 @@
 name: 'Telegram Notifications - Projects'
 
+# Temporalmente deshabilitado para desarrollo
+# Habilitar cuando se use en el repositorio de producción
 on:
-  projects_v2_item:
-    types: [created, edited, deleted, converted, reordered]
+  workflow_dispatch:  # Solo ejecutar manualmente
+  # projects_v2_item:
+  #   types: [created, edited, deleted, converted, reordered]
 
 jobs:
   notify-telegram:

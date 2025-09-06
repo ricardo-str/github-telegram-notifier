@@ -1,8 +1,11 @@
 name: 'Telegram Notifications - Issues'
 
+# Temporalmente deshabilitado para desarrollo
+# Habilitar cuando se use en el repositorio de producción
 on:
-  issues:
-    types: [assigned, unassigned, opened, closed]
+  workflow_dispatch:  # Solo ejecutar manualmente
+  # issues:
+  #   types: [assigned, unassigned, opened, closed]
 
 jobs:
   notify-telegram:
