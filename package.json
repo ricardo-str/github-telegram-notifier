@@ -1,0 +1,27 @@
+{
+  "name": "github-telegram-notifier",
+  "version": "1.0.0",
+  "description": "Automatización de notificaciones de GitHub Projects a Telegram",
+  "main": "src/telegram-notifier.js",
+  "scripts": {
+    "start": "node src/telegram-notifier.js",
+    "test": "echo \"No tests yet\" && exit 0"
+  },
+  "keywords": [
+    "github",
+    "telegram",
+    "automation",
+    "notifications",
+    "project-management"
+  ],
+  "author": "Tu nombre",
+  "license": "MIT",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.61.0",
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}
