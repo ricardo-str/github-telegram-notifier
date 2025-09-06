@@ -93,7 +93,25 @@ formatAssignmentMessage(payload) {
 - Puede pasar si varios repositories tienen el workflow activado
 - Desactiva los workflows en repositories secundarios
 
-## 🛠️ Desarrollo Local
+## � Configuración Importante
+
+### Mapeo de Usuarios
+Edita `src/user-mapping.js` para mapear usuarios de GitHub a Telegram:
+```javascript
+const USER_MAPPING = {
+  'github-username': 'telegram-username',
+  'ricardo-str': 'Ricardo_s_t',
+  // Añadir más usuarios del equipo...
+};
+```
+
+### Variables de Entorno
+```bash
+TELEGRAM_BOT_TOKEN=tu_token_del_bot
+TELEGRAM_CHAT_ID=tu_chat_id_del_grupo
+```
+
+## �🛠️ Desarrollo Local
 
 ```bash
 # Instalar dependencias
@@ -111,23 +129,32 @@ node src/telegram-notifier.js
 
 ```
 github-telegram-notifier/
-├── .github/workflows/          # GitHub Actions
-│   ├── issues.yml             # Notificaciones de issues
-│   ├── pull-requests.yml      # Notificaciones de PRs
-│   └── projects.yml           # Notificaciones de project board
-├── src/
-│   └── telegram-notifier.js   # Script principal
-├── package.json               # Dependencias
-└── README.md                  # Esta documentación
+├── .github/workflows/              # GitHub Actions workflows
+│   ├── issues.yml                 # Notificaciones de issues (deshabilitado para dev)
+│   ├── pull-requests.yml         # Notificaciones de PRs (deshabilitado para dev)
+│   └── projects.yml               # Notificaciones de project board (deshabilitado para dev)
+├── src/                           # Scripts principales
+│   ├── telegram-notifier.js       # Notificador para repositorio único
+│   ├── telegram-notifier-multi-repo.js  # Notificador para múltiples repos
+│   └── user-mapping.js           # Mapeo GitHub → Telegram usernames
+├── testing-fork/                  # Archivos para testing en fork
+│   ├── workflows/                 # Workflows habilitados para testing
+│   ├── package.json              # Dependencias para fork
+│   └── INSTALL_FORK.md           # Guía de instalación en fork
+├── testing-setup/                 # Configuración para repo de testing
+│   ├── README.md                  # README para repo de testing
+│   └── TESTING_PLAN.md           # Plan detallado de testing
+├── workflows-web-api/             # Workflows específicos para web-api
+│   ├── issues-api.yml            # Issues con prefijo [API]
+│   └── pull-requests-api.yml     # PRs con prefijo [API]
+├── test-*.js                      # Scripts de testing y desarrollo
+├── package.json                   # Dependencias principales
+├── .env                          # Variables de entorno (no se sube a git)
+├── TEAM_SETUP.md                 # Guía de instalación para administradores
+├── TEAM_USERNAMES.md             # Configuración de mapeo de usuarios
+└── README.md                     # Esta documentación
 ```
 
-## 🤝 Contribuir
-
-1. Fork el proyecto
-2. Crea una branch (`git checkout -b feature/nueva-funcionalidad`)
-3. Commit tus cambios (`git commit -am 'Añadir nueva funcionalidad'`)
-4. Push a la branch (`git push origin feature/nueva-funcionalidad`)
-5. Abre un Pull Request
 
 ## 📄 Licencia
 
@@ -135,4 +162,3 @@ MIT License - puedes usar este código libremente para tus proyectos.
 
 ---
 
-¿Problemas? Abre un issue en este repositorio o contacta al equipo 💬
