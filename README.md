@@ -25,7 +25,7 @@ Automatización de notificaciones del backlog de GitHub Projects a Telegram sigu
 
 ### Paso 2: Configurar el Repositorio
 
-1. **Fork o clona este repositorio** a tu GitHub personal
+1. **Clona este repositorio** a tu GitHub personal
 2. Ve a **Settings → Secrets and Variables → Actions**
 3. Añade estos secretos:
    - `TELEGRAM_BOT_TOKEN`: El token que te dio BotFather
@@ -137,10 +137,6 @@ github-telegram-notifier/
 │   ├── telegram-notifier.js       # Notificador para repositorio único
 │   ├── telegram-notifier-multi-repo.js  # Notificador para múltiples repos
 │   └── user-mapping.js           # Mapeo GitHub → Telegram usernames
-├── testing-fork/                  # Archivos para testing en fork
-│   ├── workflows/                 # Workflows habilitados para testing
-│   ├── package.json              # Dependencias para fork
-│   └── INSTALL_FORK.md           # Guía de instalación en fork
 ├── testing-setup/                 # Configuración para repo de testing
 │   ├── README.md                  # README para repo de testing
 │   └── TESTING_PLAN.md           # Plan detallado de testing
