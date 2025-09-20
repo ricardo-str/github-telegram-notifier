@@ -37,17 +37,27 @@ class TelegramNotifier {
   }
 
   formatPRMessage(payload) {
-    const { action, pull_request } = payload;
-    if (action === 'opened' || action === 'ready_for_review') {
+    const { action, pull_request, requested_reviewer } = payload;
+    // Soportar opened, ready_for_review y review_requested
+    if (action === 'opened' || action === 'ready_for_review' || action === 'review_requested') {
       const prTitle = pull_request.title;
       const author = this.mapUser(pull_request.user.login);
       const prUrl = pull_request.html_url;
-      
-      // Buscar reviewers en la descripción o asignar a todos
-      const reviewers = this.extractReviewers(pull_request);
-      const reviewersMention = reviewers.length > 0 ? 
+
+      // Origen de reviewers:
+      // 1) Cuando action === 'review_requested', GitHub provee requested_reviewer (usuario único)
+      // 2) Si no, usar pull_request.requested_reviewers (array nativo)
+      // 3) Complementar con @mentions del body
+      let reviewers = [];
+      if (action === 'review_requested' && requested_reviewer && requested_reviewer.login) {
+        reviewers = [requested_reviewer.login];
+      } else {
+        reviewers = this.extractReviewers(pull_request);
+      }
+
+      const reviewersMention = reviewers.length > 0 ?
         reviewers.map(r => this.mapUser(r)).join(' ') : '@team';
-      
+
       return `[PR] ${reviewersMention} - <a href="${prUrl}">${prTitle}</a> por ${author}`;
     }
     return null;
@@ -97,13 +107,19 @@ class TelegramNotifier {
   }
 
   extractReviewers(pullRequest) {
-    // Buscar @mentions en la descripción del PR
+    // 1) Reviewers nativos del PR
+    const requested = Array.isArray(pullRequest.requested_reviewers)
+      ? pullRequest.requested_reviewers.map(u => u && u.login).filter(Boolean)
+      : [];
+
+    // 2) @mentions en la descripción del PR
     const description = pullRequest.body || '';
-    const mentions = description.match(/@(\w+)/g);
-    if (mentions) {
-      return mentions.map(m => m.substring(1)); // Quitar el @
-    }
-    return [];
+    const mentions = description.match(/@(\w+)/g) || [];
+    const mentioned = mentions.map(m => m.substring(1));
+
+    // Unificar y eliminar duplicados
+    const all = [...requested, ...mentioned];
+    return Array.from(new Set(all));
   }
 
   async processWebhook() {

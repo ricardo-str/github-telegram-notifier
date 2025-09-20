@@ -1,6 +1,7 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
 const TelegramBot = require('node-telegram-bot-api');
+const USER_MAPPING = require('./user-mapping');
 
 class TelegramNotifier {
   constructor() {
@@ -8,6 +9,12 @@ class TelegramNotifier {
     this.chatId = core.getInput('telegram-chat-id') || process.env.TELEGRAM_CHAT_ID;
     this.repoIdentifier = process.env.REPO_IDENTIFIER || '';
     this.bot = new TelegramBot(this.botToken);
+  }
+
+  // Mapear usuario de GitHub a Telegram (si existe), si no, usar GitHub
+  mapUser(githubUsername) {
+    const telegramUsername = USER_MAPPING[githubUsername];
+    return telegramUsername ? `@${telegramUsername}` : `@${githubUsername}`;
   }
 
   async sendMessage(message) {
@@ -36,18 +43,23 @@ class TelegramNotifier {
   }
 
   formatPRMessage(payload) {
-    const { action, pull_request } = payload;
-    if (action === 'opened' || action === 'ready_for_review') {
+    const { action, pull_request, requested_reviewer } = payload;
+    if (action === 'opened' || action === 'ready_for_review' || action === 'review_requested') {
       const prTitle = pull_request.title;
-      const author = pull_request.user.login;
+      const author = this.mapUser(pull_request.user.login);
       const prUrl = pull_request.html_url;
       const repoPrefix = this.getRepoPrefix();
       
-      // Buscar reviewers en la descripción o asignar a todos
-      const reviewers = this.extractReviewers(pull_request);
-      const reviewersMention = reviewers.length > 0 ? reviewers.map(r => `@${r}`).join(' ') : '@team';
+      // Origen de reviewers: evento review_requested (uno), requested_reviewers (array), o @mentions en body
+      let reviewers = [];
+      if (action === 'review_requested' && requested_reviewer && requested_reviewer.login) {
+        reviewers = [requested_reviewer.login];
+      } else {
+        reviewers = this.extractReviewers(pull_request);
+      }
+      const reviewersMention = reviewers.length > 0 ? reviewers.map(r => this.mapUser(r)).join(' ') : '@team';
       
-      return `${repoPrefix}[PR] ${reviewersMention} - <a href="${prUrl}">${prTitle}</a> por @${author}`;
+      return `${repoPrefix}[PR] ${reviewersMention} - <a href="${prUrl}">${prTitle}</a> por ${author}`;
     }
     return null;
   }
@@ -101,13 +113,17 @@ class TelegramNotifier {
   }
 
   extractReviewers(pullRequest) {
-    // Buscar @mentions en la descripción del PR
+    // 1) Nativos
+    const requested = Array.isArray(pullRequest.requested_reviewers)
+      ? pull_request.requested_reviewers.map(u => u && u.login).filter(Boolean)
+      : [];
+
+    // 2) @mentions en body
     const description = pullRequest.body || '';
-    const mentions = description.match(/@(\w+)/g);
-    if (mentions) {
-      return mentions.map(m => m.substring(1));
-    }
-    return [];
+    const mentions = description.match(/@(\w+)/g) || [];
+    const mentioned = mentions.map(m => m.substring(1));
+
+    return Array.from(new Set([...requested, ...mentioned]));
   }
 
   async processWebhook() {
